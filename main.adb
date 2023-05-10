@@ -43,32 +43,35 @@ procedure Producer_Consumer is
 
       end Producer;
 
-      task body Consumer is
-         Item_Numbers : Integer;
-      begin
-         accept Start (Item_Numbers : in Integer) do
-            Consumer.Item_Numbers := Item_Numbers;
-         end Start;
+     task body Consumer is
+   Item_Numbers : Integer;
+begin
+   accept Start (Item_Numbers : in Integer) do
+      Consumer.Item_Numbers := Item_Numbers;
+   end Start;
 
-         for i in 1 .. Item_Numbers loop
-            Empty_Storage.Seize;
-            Access_Storage.Seize;
+   for i in 1 .. Item_Numbers loop
+      Empty_Storage.Seize;
+      Access_Storage.Seize;
 
-            declare
-               item : String := First_Element (Storage);
-            begin
-               Put_Line ("Took " & item);
-            end;
+      if Storage.Length = 0 then
+         Put_Line ("Storage is empty.");
+      else
+         declare
+            item : String := First_Element (Storage);
+         begin
+            Put_Line ("Took " & item);
+         end;
 
-            Storage.Delete_First;
+         Storage.Delete_First;
+         Full_Storage.Release;
+      end if;
 
-            Access_Storage.Release;
-            Full_Storage.Release;
+      Access_Storage.Release;
+      delay 0.5;
+   end loop;
 
-            delay 0.5;
-         end loop;
-
-      end Consumer;
+end Consumer;
 
       C : array (1..Num_Consumers) of Consumer;
       P : array (1..Num_Producers) of Producer;
